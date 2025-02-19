@@ -30,7 +30,15 @@
 <main class="flex flex-col gap-2 w-1/2 mx-auto">
   <h1 class="text-3xl font-bold text-center">Image Pattern Generator</h1>
   <div class="m-2 rounded-lg outline">
-    <input type="file" id="image" name="image" accept="image/*" bind:files class="file:p-2 file:outline hover:file:bg-gray-300" onchange={handleFileChange} />
+    <input
+      type="file"
+      id="image"
+      name="image"
+      accept="image/*"
+      bind:files
+      class="rounded-lg file:p-2 file:bg-gray-200 hover:file:bg-gray-300 active:file:bg-gray-500 file:duration-200"
+      onchange={handleFileChange}
+    />
   </div>
   <div class="m-2 p-2 rounded-lg outline">
     <div>
@@ -56,6 +64,11 @@
     </div>
     <div class="w-1/6"></div>
     <div class="w-4/6">
+      {#if pattern}
+        <a href={pattern?.toDataURL()} download="pattern.png" class="w-full">
+          <button class="w-full mb-2 p-2 rounded-lg outline bg-gray-200 hover:bg-gray-300 active:bg-gray-500 duration-200">Download</button>
+        </a>
+      {/if}
       <ImageBox src={pattern?.toDataURL()} noneImageText="패턴 이미지가 없습니다." />
     </div>
   </div>
