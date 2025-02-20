@@ -1,7 +1,7 @@
 <script module lang="ts">
   // 캐시 상태 관리
   let lastCache: {
-    image: HTMLImageElement | null;
+    image: HTMLImageElement | HTMLCanvasElement | null;
     distance: number | null;
     col: number | null;
     row: number | null;
@@ -16,11 +16,11 @@
     canvas: null,
   };
 
-  function isCacheValid(image: HTMLImageElement, distance: number, col: number, row: number, canvasWidth: number): boolean {
+  function isCacheValid(image: HTMLImageElement | HTMLCanvasElement, distance: number, col: number, row: number, canvasWidth: number): boolean {
     return lastCache.image === image && lastCache.distance === distance && lastCache.col === col && lastCache.row === row && lastCache.canvasWidth === canvasWidth;
   }
 
-  function updateCache(image: HTMLImageElement, distance: number, col: number, row: number, canvasWidth: number, canvas: HTMLCanvasElement): void {
+  function updateCache(image: HTMLImageElement | HTMLCanvasElement, distance: number, col: number, row: number, canvasWidth: number, canvas: HTMLCanvasElement): void {
     lastCache = {
       image,
       distance,
@@ -31,7 +31,7 @@
     };
   }
 
-  export async function generatePattern(image: HTMLImageElement, distance: number, col: number, row: number, canvasWidth: number): Promise<HTMLCanvasElement> {
+  export async function generatePattern(image: HTMLImageElement | HTMLCanvasElement, distance: number, col: number, row: number, canvasWidth: number): Promise<HTMLCanvasElement> {
     if (isCacheValid(image, distance, col, row, canvasWidth) && lastCache.canvas) {
       console.log("캐시된 패턴 이미지를 사용합니다.");
       return lastCache.canvas;

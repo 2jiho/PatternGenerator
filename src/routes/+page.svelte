@@ -1,17 +1,17 @@
 <script lang="ts">
-  import ImageBox from "$lib/component/ImageBox.svelte";
-  import { generatePattern } from "$lib/function/Pattern.svelte";
+  import Dropzone from "$lib/components/DropZone.svelte";
+  import ImageBox from "$lib/components/ImageBox.svelte";
 
-  let files: FileList | null = null;
-  let distance: number = 1;
-  let col: number = 5;
-  let row: number = 5;
-  let canvasWidth: number = 2000;
+  import { generatePattern } from "$lib/functions/Pattern.svelte";
+  let distance: number = $state(1);
+  let col: number = $state(5);
+  let row: number = $state(5);
+  let patternWidth: number = $state(2000);
 
-  let image: HTMLImageElement | null = null;
-  let pattern: HTMLCanvasElement | null = null;
+  let image: HTMLImageElement | null = $state(null);
+  let pattern: HTMLCanvasElement | null = $state(null);
 
-  async function handleFileChange() {
+  async function onfiles(files: File[]) {
     if (files) {
       image = new Image();
       image.src = URL.createObjectURL(files[0]);
@@ -19,58 +19,47 @@
       await handleGeneratePattern();
     }
   }
-
   async function handleGeneratePattern() {
     if (image) {
-      pattern = await generatePattern(image, distance, col, row, canvasWidth);
+      pattern = await generatePattern(image, distance, col, row, patternWidth);
     }
   }
 </script>
 
-<main class="flex flex-col gap-2 w-1/2 mx-auto">
-  <h1 class="text-3xl font-bold text-center">Image Pattern Generator</h1>
-  <div class="m-2 rounded-lg outline">
-    <input
-      type="file"
-      id="image"
-      name="image"
-      accept="image/*"
-      bind:files
-      class="rounded-lg file:p-2 file:bg-gray-200 hover:file:bg-gray-300 active:file:bg-gray-500 file:duration-200"
-      onchange={handleFileChange}
-    />
-  </div>
-  <div class="m-2 p-2 rounded-lg outline">
-    <div>
-      <label for="distance">패턴 거리 (배)</label>
-      <input type="number" id="distance" bind:value={distance} min="-0.5" max="10" step="0.1" onchange={handleGeneratePattern} class="m-1 rounded-sm outline" />
+<main class="flex flex-col md:flex-row">
+  <div class="md:w-64 md:h-screen md:relative w-full bg-gray-900 text-white">
+    <div class="p-2 text-lg font-bold">Image Pattern Generator</div>
+    <div class="p-2 hover:bg-gray-700">
+      <Dropzone accept="image/*" {onfiles} />
     </div>
-    <div>
-      <label for="col">가로 (개)</label>
-      <input type="number" id="col" bind:value={col} min="1" max="100" onchange={handleGeneratePattern} class="m-1 rounded-sm outline" />
+    <div class="p-2 hover:bg-gray-700 flex flex-col">
+      <label for="distance">Distance ({distance}X)</label>
+      <input type="range" id="distance" bind:value={distance} min="-0.5" max="10" step="0.1" onchange={handleGeneratePattern} />
     </div>
-    <div>
-      <label for="row">세로 (개)</label>
-      <input type="number" id="row" bind:value={row} min="1" max="100" onchange={handleGeneratePattern} class="m-1 rounded-sm outline" />
+    <div class="p-2 hover:bg-gray-700 flex flex-col">
+      <label for="col">Column ({col}Ea)</label>
+      <input type="range" id="col" bind:value={col} min="1" max="100" onchange={handleGeneratePattern} />
     </div>
-    <div>
-      <label for="width">패턴 가로 크기 (px)</label>
-      <input type="number" id="width" bind:value={canvasWidth} min="100" max="10000" step="100" onchange={handleGeneratePattern} class="m-1 rounded-sm outline" />
+    <div class="p-2 hover:bg-gray-700 flex flex-col">
+      <label for="row">Row ({row}Ea)</label>
+      <input type="range" id="row" bind:value={row} min="1" max="100" onchange={handleGeneratePattern} />
     </div>
-  </div>
-  <div class="flex gap-2 m-2">
-    <div class="w-1/6">
-      <ImageBox src={image?.src} noneImageText="이미지가 없습니다." />
+    <div class="p-2 hover:bg-gray-700 flex flex-col">
+      <label for="width">Pattern Width ({patternWidth}px)</label>
+      <input type="range" id="width" bind:value={patternWidth} min="100" max="10000" step="100" onchange={handleGeneratePattern} />
     </div>
-    <div class="w-1/6"></div>
-    <div class="w-4/6">
-      {#if pattern}
+    {#if pattern}
+      <div class="p-2 hover:bg-gray-700 flex flex-col md:w-64 md:absolute md:bottom-4">
         <a href={pattern?.toDataURL()} download="pattern.png" class="w-full">
-          <button class="w-full mb-2 p-2 rounded-lg outline bg-gray-200 hover:bg-gray-300 active:bg-gray-500 duration-200">Download</button>
+          <button class="w-full h-10 rounded-lg border-3 hover:bg-gray-500 active:bg-gray-700 duration-200">Pattern Download</button>
         </a>
-      {/if}
-      <ImageBox src={pattern?.toDataURL()} noneImageText="패턴 이미지가 없습니다." />
-    </div>
+      </div>
+    {/if}
+  </div>
+
+  <div class="flex-1 md:h-screen">
+    <!-- TODO: 줌 가능하도록 변경할것 -->
+    <ImageBox src={pattern?.toDataURL()} noneSrcText="패턴 이미지가 없습니다." alt="pattern image" />
   </div>
 </main>
 
