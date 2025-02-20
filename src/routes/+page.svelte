@@ -8,6 +8,8 @@
   let row: number = $state(5);
   let patternWidth: number = $state(2000);
 
+  let previewWidth: number = 1280;
+
   let image: HTMLImageElement | null = $state(null);
   let pattern: HTMLCanvasElement | null = $state(null);
 
@@ -21,7 +23,30 @@
   }
   async function handleGeneratePattern() {
     if (image) {
-      pattern = await generatePattern(image, distance, col, row, patternWidth);
+      if (document) {
+        const contentsElement = document.getElementById("contents");
+        if (contentsElement) {
+          const maxPreviewWidthBasedOnScreenWidth = contentsElement.offsetWidth;
+          const desiredAspectRatio = image.width / image.height;
+          const maxHeightPerRowColumn = (contentsElement.offsetHeight / row) * col;
+          const maxPreviewWidthBasedOnScreenHeight = maxHeightPerRowColumn * desiredAspectRatio;
+
+          previewWidth = Math.min(maxPreviewWidthBasedOnScreenWidth, maxPreviewWidthBasedOnScreenHeight);
+        }
+        const maxPreviewWidth = 1920;
+        previewWidth = Math.min(previewWidth, maxPreviewWidth);
+      }
+      pattern = await generatePattern(image, distance, col, row, previewWidth);
+    }
+  }
+  async function handlePatternDownload(event: Event) {
+    if (image) {
+      const patternOriginal = await generatePattern(image, distance, col, row, patternWidth);
+      const patternDataURL = patternOriginal.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = patternDataURL;
+      link.download = `pattern(${patternWidth}px_${col}x${row}).png`;
+      link.click();
     }
   }
 </script>
@@ -46,20 +71,18 @@
     </div>
     <div class="p-2 hover:bg-gray-700 flex flex-col">
       <label for="width">Pattern Width ({patternWidth}px)</label>
-      <input type="range" id="width" bind:value={patternWidth} min="100" max="10000" step="100" onchange={handleGeneratePattern} />
+      <input type="range" id="width" bind:value={patternWidth} min="100" max="10000" step="100" />
     </div>
     {#if pattern}
       <div class="p-2 hover:bg-gray-700 flex flex-col md:w-64 md:absolute md:bottom-4">
-        <a href={pattern?.toDataURL()} download="pattern.png" class="w-full">
-          <button class="w-full h-10 rounded-lg border-3 hover:bg-gray-500 active:bg-gray-700 duration-200">Pattern Download</button>
-        </a>
+        <button class="w-full h-10 rounded-lg border-3 hover:bg-gray-500 active:bg-gray-700 duration-200" onclick={handlePatternDownload}>Pattern Download</button>
       </div>
     {/if}
   </div>
 
-  <div class="flex-1 md:h-screen">
+  <div id="contents" class="flex-1 md:h-screen">
     <!-- TODO: 줌 가능하도록 변경할것 -->
-    <ImageBox src={pattern?.toDataURL()} noneSrcText="패턴 이미지가 없습니다." alt="pattern image" />
+    <ImageBox src={pattern?.toDataURL()} noneSrcText="패턴 이미지가 없습니다." alt="pattern image preview" />
   </div>
 </main>
 

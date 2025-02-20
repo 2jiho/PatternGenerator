@@ -1,42 +1,5 @@
 <script module lang="ts">
-  // 캐시 상태 관리
-  let lastCache: {
-    image: HTMLImageElement | HTMLCanvasElement | null;
-    distance: number | null;
-    col: number | null;
-    row: number | null;
-    canvasWidth: number | null;
-    canvas: HTMLCanvasElement | null;
-  } = {
-    image: null,
-    distance: null,
-    col: null,
-    row: null,
-    canvasWidth: null,
-    canvas: null,
-  };
-
-  function isCacheValid(image: HTMLImageElement | HTMLCanvasElement, distance: number, col: number, row: number, canvasWidth: number): boolean {
-    return lastCache.image === image && lastCache.distance === distance && lastCache.col === col && lastCache.row === row && lastCache.canvasWidth === canvasWidth;
-  }
-
-  function updateCache(image: HTMLImageElement | HTMLCanvasElement, distance: number, col: number, row: number, canvasWidth: number, canvas: HTMLCanvasElement): void {
-    lastCache = {
-      image,
-      distance,
-      col,
-      row,
-      canvasWidth,
-      canvas,
-    };
-  }
-
-  export async function generatePattern(image: HTMLImageElement | HTMLCanvasElement, distance: number, col: number, row: number, canvasWidth: number): Promise<HTMLCanvasElement> {
-    if (isCacheValid(image, distance, col, row, canvasWidth) && lastCache.canvas) {
-      console.log("캐시된 패턴 이미지를 사용합니다.");
-      return lastCache.canvas;
-    }
-
+  export async function generatePattern(image: HTMLImageElement, distance: number, col: number, row: number, canvasWidth: number): Promise<HTMLCanvasElement> {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) {
@@ -71,6 +34,7 @@
     };
 
     // 패턴 그리기
+    const imageBitmap = await createImageBitmap(image);
     for (let rowIndex = 0; rowIndex < row * 2 + 1; rowIndex++) {
       const isEvenRow = rowIndex % 2 === 0;
       const startX = isEvenRow ? startPoints.even.x : startPoints.odd.x;
@@ -78,11 +42,10 @@
 
       for (let colIndex = 0; colIndex <= col; colIndex++) {
         const xPosition = startX + colIndex * offset.x;
-        ctx.drawImage(image, xPosition, yPosition, scaledSize.width, scaledSize.height);
+        ctx.drawImage(imageBitmap, xPosition, yPosition, scaledSize.width, scaledSize.height);
       }
     }
 
-    updateCache(image, distance, col, row, canvasWidth, canvas);
     return canvas;
   }
 </script>
