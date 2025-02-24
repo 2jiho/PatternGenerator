@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "cross-env NODE_ENV=production vite build",
+		"deploy": "pnpm run build && node -e \"require('fs').writeFileSync('build/.nojekyll', '')\" && gh-pages -d build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -15,6 +16,8 @@
 		"@sveltejs/adapter-auto": "^4.0.0",
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"cross-env": "^7.0.3",
+		"gh-pages": "^6.3.0",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
 		"typescript": "^5.0.0",
@@ -27,6 +30,7 @@
 	},
 	"dependencies": {
 		"@huggingface/transformers": "^3.3.3",
+		"@sveltejs/adapter-static": "^3.0.8",
 		"@tailwindcss/vite": "^4.0.7",
 		"tailwindcss": "^4.0.7"
 	}
