@@ -68,21 +68,21 @@
 
 <main class="flex flex-col md:flex-row">
   <!-- 메뉴 시작 -->
-  <div class="md:w-64 md:h-screen md:relative w-full bg-gray-900 text-white">
-    <div class="p-2 text-lg font-bold line-clamp-1">Image Pattern Generator</div>
+  <div class="w-full bg-gray-900 text-white md:relative md:h-screen md:w-64">
+    <div class="line-clamp-1 p-2 text-lg font-bold">Image Pattern Generator</div>
     <!-- 파일 업로드 시작 -->
     <div class="p-2">
       <div class="aspect-square">
         <label
           for="files"
-          class="relative size-full border-3 border-dashed rounded-lg flex flex-col items-center justify-center hover:bg-gray-700 active:bg-gray-500 duration-200 cursor-pointer"
+          class="relative flex size-full cursor-pointer flex-col items-center justify-center rounded-lg border-3 border-dashed duration-200 hover:bg-gray-700 active:bg-gray-500"
           aria-label={ariaLabel}
         >
           {#if image}
             <img src={image.src} alt="Uploaded" class="size-full object-contain" />
           {/if}
-          <div class="absolute size-full flex flex-col items-center justify-center" class:opacity-50={image}>
-            <svg viewBox="0 0 24 24" class="w-1/4 h-1/4">
+          <div class="absolute flex size-full flex-col items-center justify-center" class:opacity-50={image}>
+            <svg viewBox="0 0 24 24" class="h-1/4 w-1/4">
               <path
                 fill="white"
                 d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
@@ -96,25 +96,25 @@
     </div>
     <!-- 파일 업로드 끝 -->
     <!-- 설정 시작 -->
-    <div class="p-2 hover:bg-gray-700 flex flex-col">
+    <div class="flex flex-col p-2 hover:bg-gray-700">
       <Slider bind:value={distance} min="-0.5" max="3" step="0.1" unit="x" label="Distance" onchange={debouncedGeneratePattern} />
     </div>
-    <div class="p-2 hover:bg-gray-700 flex flex-col">
+    <div class="flex flex-col p-2 hover:bg-gray-700">
       <Slider bind:value={col} min="1" max="20" unit="ea" label="Column" onchange={debouncedGeneratePattern} />
     </div>
-    <div class="p-2 hover:bg-gray-700 flex flex-col">
+    <div class="flex flex-col p-2 hover:bg-gray-700">
       <Slider bind:value={row} min="1" max="20" unit="ea" label="Row" onchange={debouncedGeneratePattern} />
     </div>
-    <div class="p-2 hover:bg-gray-700 flex flex-col">
+    <div class="flex flex-col p-2 hover:bg-gray-700">
       <Slider bind:value={patternWidth} min="100" unit="px" max="10000" step="100" label="Pattern Width" onchange={debouncedGeneratePattern} />
     </div>
     <!-- 설정 끝 -->
     <!-- 다운로드 버튼 시작 -->
     {#if pattern}
-      <div class="p-2 flex flex-col md:w-64 md:absolute md:bottom-4">
+      <div class="flex flex-col p-2 md:absolute md:bottom-4 md:w-64">
         <a href={pattern?.toDataURL()} download={`pattern(${patternWidth}px_${col}x${row}).png`}>
           <button
-            class="w-full h-10 rounded-lg border-3 hover:bg-gray-700 active:bg-gray-500 duration-200"
+            class="h-10 w-full rounded-lg border-3 duration-200 hover:bg-gray-700 active:bg-gray-500"
             disabled={loading}
             aria-label="Download pattern image"
           >
@@ -133,17 +133,17 @@
   <!-- 본문 시작 -->
   <div id="contents" class="flex-1 md:h-screen">
     {#if loading}
-      <div class="size-full flex items-center justify-center">Loading...</div>
+      <div class="flex size-full items-center justify-center">Loading...</div>
     {:else if errorMessage}
-      <div class="size-full flex items-center justify-center text-red-500">
+      <div class="flex size-full items-center justify-center text-red-500">
         {errorMessage}
       </div>
     {:else if pattern}
-      <div class="size-full flex items-center justify-center">
+      <div class="flex size-full items-center justify-center">
         <img src={pattern?.toDataURL("image/png")} alt="Pattern preview" class="size-full object-contain" />
       </div>
     {:else}
-      <div class="size-full flex items-center justify-center">
+      <div class="flex size-full items-center justify-center">
         <svg viewBox="0 0 24 24" class="size-1/2">
           <path
             fill="gray"
