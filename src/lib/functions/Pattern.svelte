@@ -8,44 +8,45 @@
 
     // 이미지 크기 및 캔버스 설정
     const { width: imgWidth, height: imgHeight } = image;
-
-    // 캔버스 높이 계산
     const canvasHeight = ((imgHeight / imgWidth) * canvasWidth * row) / col;
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    // 이미지 크기 조정
+    // 이미지 스케일 및 오프셋 계산 (반복문 외부에서 미리 계산)
     const scaleRatio = canvasWidth / (col * imgWidth);
-    const scaledSize = {
-      width: (imgWidth / (distance + 1)) * scaleRatio,
-      height: (imgHeight / (distance + 1)) * scaleRatio,
-    };
+    const scaledWidth = (imgWidth / (distance + 1)) * scaleRatio;
+    const scaledHeight = (imgHeight / (distance + 1)) * scaleRatio;
+    const offsetX = scaledWidth * (distance + 1);
+    const offsetY = scaledHeight * (distance + 1);
+    const startEvenX = -scaledWidth / 2 + offsetX / 2;
+    const startOddX = -scaledWidth / 2;
 
-    // 오프셋 계산
-    const offset = {
-      x: scaledSize.width * (distance + 1),
-      y: scaledSize.height * (distance + 1),
-    };
+    // 미리 계산한 값들
+    const halfScaledHeight = scaledHeight / 2;
+    const halfOffsetY = offsetY / 2;
 
-    // 그리기 설정
-    const startPoints = {
-      even: { x: -scaledSize.width / 2 + offset.x / 2 },
-      odd: { x: -scaledSize.width / 2 },
-    };
-
-    // 패턴 그리기
     const imageBitmap = await createImageBitmap(image);
-    for (let rowIndex = 0; rowIndex < row * 2 + 1; rowIndex++) {
-      const isEvenRow = rowIndex % 2 === 0;
-      const startX = isEvenRow ? startPoints.even.x : startPoints.odd.x;
-      const yPosition = (rowIndex * offset.y) / 2 - scaledSize.height / 2;
 
-      for (let colIndex = 0; colIndex <= col; colIndex++) {
-        const xPosition = startX + colIndex * offset.x;
-        ctx.drawImage(imageBitmap, xPosition, yPosition, scaledSize.width, scaledSize.height);
+    // totalRows 대신 실제로 캔버스에 그릴 가능성이 있는 행 범위를 계산할 수도 있겠지만
+    // 여기서는 기존 로직(totalRows)을 유지합니다.
+    const totalRows = row * 2 + 1;
+    for (let rowIndex = 0; rowIndex < totalRows; rowIndex++) {
+      const isEvenRow = rowIndex % 2 === 0;
+      const startX = isEvenRow ? startEvenX : startOddX;
+      // yPosition: 반복마다 halfOffsetY와 halfScaledHeight를 사용하여 계산 부담 줄임
+      const yPosition = rowIndex * halfOffsetY - halfScaledHeight;
+
+      // 캔버스 범위 검사: yPosition 값에 따라 전체 행을 건너뛸 수 있음
+      if (yPosition + scaledHeight < 0 || yPosition > canvasHeight) continue;
+
+      for (let colIndex = 0; colIndex <= (isEvenRow ? col - 1 : col); colIndex++) {
+        const xPosition = startX + colIndex * offsetX;
+        if (xPosition + scaledWidth < 0 || xPosition > canvasWidth) continue;
+        ctx.drawImage(imageBitmap, xPosition, yPosition, scaledWidth, scaledHeight);
       }
     }
 
+    imageBitmap.close();
     return canvas;
   }
 </script>
