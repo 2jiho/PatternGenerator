@@ -96,16 +96,10 @@
     </div>
     <!-- 파일 업로드 끝 -->
     <!-- 설정 시작 -->
-    <div class="flex flex-col p-2 hover:bg-gray-700">
+    <div class="flex flex-col gap-2 p-2">
       <Slider bind:value={distance} min="-0.5" max="3" step="0.1" unit="x" label="Distance" onchange={debouncedGeneratePattern} />
-    </div>
-    <div class="flex flex-col p-2 hover:bg-gray-700">
       <Slider bind:value={col} min="1" max="20" unit="ea" label="Column" onchange={debouncedGeneratePattern} />
-    </div>
-    <div class="flex flex-col p-2 hover:bg-gray-700">
       <Slider bind:value={row} min="1" max="20" unit="ea" label="Row" onchange={debouncedGeneratePattern} />
-    </div>
-    <div class="flex flex-col p-2 hover:bg-gray-700">
       <Slider bind:value={patternWidth} min="100" unit="px" max="10000" step="100" label="Pattern Width" onchange={debouncedGeneratePattern} />
     </div>
     <!-- 설정 끝 -->
