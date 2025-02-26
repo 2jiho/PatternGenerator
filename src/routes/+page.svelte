@@ -1,69 +1,64 @@
 <script lang="ts">
   import Slider from "$lib/components/Slider.svelte";
-  import { generatePattern } from "$lib/functions/Pattern.svelte";
+  import patternGenerator from "$lib/functions/patternGenerator";
 
   let distance = 1;
   let col = 3;
   let row = 2;
   let patternWidth = 2000;
 
-  let image: HTMLImageElement | null = null;
-  let pattern: HTMLCanvasElement | null = null;
-  let loading = false;
-  let errorMessage = "";
+  let files: FileList;
 
-  function debounce<T extends (...args: any[]) => any>(func: T, delay: number): (...args: Parameters<T>) => void {
-    /**
-     * 지정된 시간 이후에 함수 호출을 실행하는 debounce 함수.
-     *
-     * @param func - 디바운스할 함수.
-     * @param delay - 지연 시간 (밀리초).
-     * @returns 디바운스된 함수.
-     */
-    let timeoutId: ReturnType<typeof setTimeout>;
+  let imageBitmap: ImageBitmap;
+  let imageCanvas: HTMLCanvasElement;
 
-    return (...args: Parameters<T>) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func(...args);
-      }, delay);
-    };
-  }
+  let patternOffscreenCanvas: OffscreenCanvas;
+  let patternCanvas: HTMLCanvasElement;
 
-  async function handleFileUpload(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const files = target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      image = new Image();
-      image.src = URL.createObjectURL(file);
-      image.onload = async () => {
-        await debouncedGeneratePattern();
-        if (image) {
-          URL.revokeObjectURL(image.src); // 메모리 누수 방지
-        }
-      };
-    }
-  }
-
-  async function generatePatternHandler() {
-    if (image) {
-      loading = true;
-      errorMessage = "";
-      try {
-        pattern = await generatePattern(image, distance, col, row, patternWidth);
-      } catch (error: any) {
-        errorMessage = error.message || "패턴 생성 중 오류가 발생했습니다.";
-        pattern = null;
-      } finally {
-        loading = false;
+  $: if (files) {
+    (async () => {
+      if (files && files.length > 0) {
+        const file = files[0];
+        imageBitmap = await createImageBitmap(file);
       }
+    })();
+  }
+
+  $: if (patternOffscreenCanvas && patternCanvas) {
+    const ctx = patternCanvas.getContext("2d");
+    if (ctx) {
+      patternCanvas.width = patternOffscreenCanvas.width;
+      patternCanvas.height = patternOffscreenCanvas.height;
+      ctx.drawImage(patternOffscreenCanvas, 0, 0);
     }
   }
 
-  const debouncedGeneratePattern = debounce(generatePatternHandler, 300);
+  $: if (imageCanvas) {
+    imageCanvas.width = imageBitmap.width;
+    imageCanvas.height = imageBitmap.height;
+    const ctx = imageCanvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(imageBitmap, 0, 0);
+    }
+  }
 
-  let ariaLabel = "Click to select files";
+  $: if (imageBitmap) {
+    (async () => {
+      patternOffscreenCanvas = await patternGenerator(imageBitmap, distance, col, row, patternWidth);
+    })();
+  }
+
+  async function downloadHandler() {
+    if (patternOffscreenCanvas) {
+      const url = URL.createObjectURL(await patternOffscreenCanvas.convertToBlob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pattern(${patternWidth}px_${col}x${row}).png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      a.remove();
+    }
+  }
 </script>
 
 <main class="flex flex-col md:flex-row">
@@ -71,73 +66,55 @@
   <div class="w-full bg-gray-900 text-white md:relative md:h-screen md:w-64">
     <div class="line-clamp-1 p-2 text-lg font-bold">Image Pattern Generator</div>
     <!-- 파일 업로드 시작 -->
-    <div class="p-2">
-      <div class="aspect-square">
-        <label
-          for="files"
-          class="relative flex size-full cursor-pointer flex-col items-center justify-center rounded-lg border-3 border-dashed duration-200 hover:bg-gray-700 active:bg-gray-500"
-          aria-label={ariaLabel}
-        >
-          {#if image}
-            <img src={image.src} alt="Uploaded" class="size-full object-contain" />
-          {/if}
-          <div class="absolute flex size-full flex-col items-center justify-center" class:opacity-50={image}>
-            <svg viewBox="0 0 24 24" class="h-1/4 w-1/4">
-              <path
-                fill="white"
-                d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
-              />
-            </svg>
-            <p class="line-clamp-1">{ariaLabel}</p>
-          </div>
-        </label>
-        <input id="files" type="file" accept="image/*" class="hidden" onchange={handleFileUpload} />
-      </div>
+    <div class="aspect-square p-2">
+      <label
+        for="input-file"
+        class="flex size-full cursor-pointer flex-col items-center justify-center rounded-lg border-3 border-dashed duration-200 hover:bg-gray-700 active:bg-gray-500"
+      >
+        {#if imageBitmap}
+          <canvas bind:this={imageCanvas} class="size-9/10 object-contain"></canvas>
+        {:else}
+          <svg viewBox="0 0 24 24" class="size-1/4">
+            <path
+              fill="white"
+              d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+            />
+          </svg>
+          <p class="line-clamp-1">Click to select files</p>
+        {/if}
+      </label>
+      <input id="input-file" type="file" accept="image/*" class="hidden" bind:files />
     </div>
     <!-- 파일 업로드 끝 -->
     <!-- 설정 시작 -->
     <div class="flex flex-col gap-2 p-2">
-      <Slider bind:value={distance} min="-0.5" max="3" step="0.1" unit="x" label="Distance" onchange={debouncedGeneratePattern} />
-      <Slider bind:value={col} min="1" max="20" unit="ea" label="Column" onchange={debouncedGeneratePattern} />
-      <Slider bind:value={row} min="1" max="20" unit="ea" label="Row" onchange={debouncedGeneratePattern} />
-      <Slider bind:value={patternWidth} min="100" unit="px" max="10000" step="100" label="Pattern Width" onchange={debouncedGeneratePattern} />
+      <Slider bind:value={distance} min="-0.5" max="3" step="0.1" unit="x" label="Distance" />
+      <Slider bind:value={col} min="1" max="20" unit="ea" label="Column" />
+      <Slider bind:value={row} min="1" max="20" unit="ea" label="Row" />
+      <Slider bind:value={patternWidth} min="100" unit="px" max="4000" step="100" label="Pattern Width" />
     </div>
     <!-- 설정 끝 -->
     <!-- 다운로드 버튼 시작 -->
-    {#if pattern}
-      <div class="flex flex-col p-2 md:absolute md:bottom-4 md:w-64">
-        <a href={pattern?.toDataURL()} download={`pattern(${patternWidth}px_${col}x${row}).png`}>
-          <button
-            class="h-10 w-full rounded-lg border-3 duration-200 hover:bg-gray-700 active:bg-gray-500"
-            disabled={loading}
-            aria-label="Download pattern image"
-          >
-            {#if loading}
-              Loading...
-            {:else}
-              Pattern Download
-            {/if}
-          </button>
-        </a>
-      </div>
-    {/if}
+
+    <div class="flex flex-col p-2 md:absolute md:bottom-4 md:w-64">
+      <button
+        class="h-10 w-full rounded-lg border-3 duration-200 hover:bg-gray-700 active:bg-gray-500"
+        class:hidden={!patternOffscreenCanvas}
+        aria-label="Download pattern image"
+        onclick={downloadHandler}
+      >
+        Pattern Download
+      </button>
+    </div>
     <!-- 다운로드 버튼 끝 -->
   </div>
   <!-- 메뉴 끝 -->
   <!-- 본문 시작 -->
   <div id="contents" class="flex-1 md:h-screen">
-    {#if loading}
-      <div class="flex size-full items-center justify-center">Loading...</div>
-    {:else if errorMessage}
-      <div class="flex size-full items-center justify-center text-red-500">
-        {errorMessage}
-      </div>
-    {:else if pattern}
-      <div class="flex size-full items-center justify-center">
-        <img src={pattern?.toDataURL("image/png")} alt="Pattern preview" class="size-full object-contain" />
-      </div>
-    {:else}
-      <div class="flex size-full items-center justify-center">
+    <div class="flex size-full items-center justify-center">
+      {#if patternOffscreenCanvas}
+        <canvas bind:this={patternCanvas} class="size-full object-contain"></canvas>
+      {:else}
         <svg viewBox="0 0 24 24" class="size-1/2">
           <path
             fill="gray"
@@ -145,8 +122,8 @@
           />
           <path fill="none" d="M0 0h24v24H0z" />
         </svg>
-      </div>
-    {/if}
+      {/if}
+    </div>
   </div>
   <!-- 본문 끝 -->
 </main>
