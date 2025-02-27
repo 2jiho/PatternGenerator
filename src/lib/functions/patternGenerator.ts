@@ -1,4 +1,11 @@
-async function patternGenerator(source: ImageBitmap, distance: number, col: number, row: number, canvasWidth: number): Promise<OffscreenCanvas> {
+async function patternGenerator(
+  source: ImageBitmap | undefined,
+  distance: number,
+  col: number,
+  row: number,
+  canvasWidth: number,
+): Promise<ImageBitmap | undefined> {
+  if (!source) return;
   // 이미지 크기 및 캔버스 설정
   const { width: imgWidth, height: imgHeight } = source;
   const canvasHeight = ((imgHeight / imgWidth) * canvasWidth * row) / col;
@@ -38,7 +45,7 @@ async function patternGenerator(source: ImageBitmap, distance: number, col: numb
       ctx.drawImage(source, xPosition, yPosition, scaledWidth, scaledHeight);
     }
   }
-  return offscreenCanvas;
+  return createImageBitmap(offscreenCanvas);
 }
 
 export default patternGenerator;
