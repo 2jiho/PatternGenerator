@@ -57,6 +57,9 @@ importers:
       svelte:
         specifier: ^5.0.0
         version: 5.20.1
+      svelte-awesome-icons:
+        specifier: ^2.0.1
+        version: 2.0.1(svelte@5.20.1)
       svelte-check:
         specifier: ^4.0.0
         version: 4.1.4(svelte@5.20.1)(typescript@5.7.3)
@@ -1590,6 +1593,12 @@ packages:
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
+
+  svelte-awesome-icons@2.0.1:
+    resolution: {integrity: sha512-kz+44DXrdhZUjN0RBULpkBad7WBAp9Wvcb/VoTDsZC0uvDGF4crCX9SHqi0r7lTVqfhrVK7H70bz1RKAmlHqTA==}
+    engines: {node: '>=18.0.0', npm: '>=7.0.0'}
+    peerDependencies:
+      svelte: ^5.0.0 || ^5.0.0-next.1
 
   svelte-check@4.1.4:
     resolution: {integrity: sha512-v0j7yLbT29MezzaQJPEDwksybTE2Ups9rUxEXy92T06TiA0cbqcO8wAOwNUVkFW6B0hsYHA+oAX3BS8b/2oHtw==}
@@ -3140,6 +3149,10 @@ snapshots:
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
+
+  svelte-awesome-icons@2.0.1(svelte@5.20.1):
+    dependencies:
+      svelte: 5.20.1
 
   svelte-check@4.1.4(svelte@5.20.1)(typescript@5.7.3):
     dependencies:

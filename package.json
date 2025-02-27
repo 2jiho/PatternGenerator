@@ -23,6 +23,7 @@
 		"jsdom": "^26.0.0",
 		"prettier-plugin-tailwindcss": "^0.6.11",
 		"svelte": "^5.0.0",
+		"svelte-awesome-icons": "^2.0.1",
 		"svelte-check": "^4.0.0",
 		"typescript": "^5.0.0",
 		"vite": "^6.0.0",
