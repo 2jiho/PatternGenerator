@@ -1,4 +1,4 @@
-async function patternGenerator(
+async function diamondPatternGenerator(
   source: ImageBitmap | undefined,
   distance: number,
   col: number,
@@ -48,4 +48,4 @@ async function patternGenerator(
   return createImageBitmap(offscreenCanvas);
 }
 
-export default patternGenerator;
+export default diamondPatternGenerator;
