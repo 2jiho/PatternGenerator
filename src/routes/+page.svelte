@@ -4,7 +4,7 @@
   import Slider from "$lib/components/Slider.svelte";
   import ImageSelector from "$lib/components/ImageSelector.svelte";
   import DownloadButton from "$lib/components/DownloadButton.svelte";
-  import patternGenerator from "$lib/patternGenerator/diamondPatternGenerator";
+  import patternGenerator from "$lib/patternGenerator/diamond";
 
   let distance = 1;
   let col = 3;
