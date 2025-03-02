@@ -1,19 +1,10 @@
-export interface ParamConfig {
-  id: string;
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  unit: string;
-  default: number;
-}
+import { DiamondPatternGenerator } from "./diamond";
+import { GridPatternGenerator } from "./grid";
+import { TessellationPatternGenerator } from "./tessellation";
 
-export abstract class PatternGenerator {
-  readonly params: ParamConfig[];
+const PatternGenerators = {
+  diamond: new DiamondPatternGenerator(),
+  grid: new GridPatternGenerator(),
+};
 
-  constructor(params: ParamConfig[]) {
-    this.params = params;
-  }
-
-  abstract generate(image: ImageBitmap, paramValues: {}): Promise<ImageBitmap>;
-}
+export default PatternGenerators;

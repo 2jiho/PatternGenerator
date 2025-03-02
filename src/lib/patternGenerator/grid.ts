@@ -1,4 +1,4 @@
-import { PatternGenerator } from "$lib/patternGenerator";
+import { PatternGenerator } from "$lib/patternGenerator/types";
 
 export class GridPatternGenerator extends PatternGenerator {
   constructor() {

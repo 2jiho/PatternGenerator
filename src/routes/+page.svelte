@@ -2,23 +2,28 @@
   import { onMount } from "svelte";
   import { ImageSolid } from "svelte-awesome-icons";
 
+  // 컴포넌트
   import Slider from "$lib/components/Slider.svelte";
   import ImageSelector from "$lib/components/ImageSelector.svelte";
   import DownloadButton from "$lib/components/DownloadButton.svelte";
-  import { DiamondPatternGenerator } from "$lib/patternGenerator/diamond";
-  import { GridPatternGenerator } from "$lib/patternGenerator/grid";
-  const patternGenerators = { diamond: new DiamondPatternGenerator(), grid: new GridPatternGenerator() };
+
+  // 함수
+  import PatternGenerators from "$lib/patternGenerator";
 
   let imageBitmap: ImageBitmap;
   let patternImageBitmap: ImageBitmap | undefined;
   let patternCanvas: HTMLCanvasElement;
 
-  type PatternKey = keyof typeof patternGenerators;
-  let selectedPatternKey: PatternKey;
-  let selectedGenerator: (typeof patternGenerators)[PatternKey];
-  let patternParams: (typeof patternGenerators)[PatternKey]["params"];
+  type PatternKey = keyof typeof PatternGenerators;
+  let selectedPatternKey: PatternKey | undefined;
+  type SelectedGenerator = (typeof PatternGenerators)[PatternKey];
+  let selectedGenerator: SelectedGenerator | undefined;
+  let patternParams: SelectedGenerator["params"] | undefined;
+  type ParamValues = Record<string, number>;
+  let paramValues: ParamValues = {};
+
   $: if (selectedPatternKey) {
-    selectedGenerator = patternGenerators[selectedPatternKey];
+    selectedGenerator = PatternGenerators[selectedPatternKey];
     patternParams = selectedGenerator.params;
     patternParams.forEach((param) => {
       paramValues[param.id] = param.default;
@@ -26,10 +31,8 @@
     paramValues["canvasWidth"] = 2000;
   }
 
-  let paramValues: Record<string, number> = {};
-
   onMount(() => {
-    selectedPatternKey = "diamond";
+    selectedPatternKey = Object.keys(PatternGenerators)[0] as PatternKey;
   });
 
   $: if (patternCanvas && patternImageBitmap) {
@@ -67,7 +70,7 @@
       <div class="mb-2">
         <label for="pattern-select" class="mb-1 block text-sm">패턴 타입</label>
         <select id="pattern-select" class="w-full rounded bg-gray-700 px-2 py-1 text-white" bind:value={selectedPatternKey}>
-          {#each Object.keys(patternGenerators) as patternKey}
+          {#each Object.keys(PatternGenerators) as patternKey}
             <option value={patternKey}>
               {patternKey.charAt(0).toUpperCase() + patternKey.slice(1)}
             </option>
@@ -75,9 +78,11 @@
         </select>
       </div>
       <!-- 동적 슬라이더 생성 -->
-      {#each patternParams as param (param.id)}
-        <Slider bind:value={paramValues[param.id]} min={param.min} max={param.max} step={param.step} unit={param.unit} label={param.label} />
-      {/each}
+      {#if patternParams}
+        {#each patternParams as param (param.id)}
+          <Slider bind:value={paramValues[param.id]} min={param.min} max={param.max} step={param.step} unit={param.unit} label={param.label} />
+        {/each}
+      {/if}
       <Slider bind:value={paramValues["canvasWidth"]} min="100" max="4000" step="100" unit="px" label="Canvas Width" />
     </div>
     <div class="flex flex-col p-2 md:absolute md:bottom-4 md:w-64">
