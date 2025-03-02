@@ -23,34 +23,41 @@ export class DiamondPatternGenerator extends PatternGenerator {
     const ctx = offscreenCanvas.getContext("2d");
     if (!ctx) throw new Error("Failed to get canvas context");
 
-    // 이미지 스케일 및 오프셋 계산 (반복문 외부에서 미리 계산)
+    // 이미지 스케일 및 간격 계산 (반복문 외부에서 미리 계산)
     const scaleRatio = canvasWidth / (col * imgWidth);
-    const scaledWidth = (imgWidth / (distance + 1)) * scaleRatio;
-    const scaledHeight = (imgHeight / (distance + 1)) * scaleRatio;
-    const offsetX = scaledWidth * (distance + 1);
-    const offsetY = scaledHeight * (distance + 1);
-    const startEvenX = -scaledWidth / 2 + offsetX / 2;
-    const startOddX = -scaledWidth / 2;
+    const imageScaledWidth = (imgWidth / (distance + 1)) * scaleRatio;
+    const imageScaledHeight = (imgHeight / (distance + 1)) * scaleRatio;
+    const diamondColumnSpacing = imageScaledWidth * (distance + 1);
+    const diamondRowSpacing = imageScaledHeight * (distance + 1);
+
+    // 시작 위치 계산
+    const evenRowStartX = -imageScaledWidth / 2 + diamondColumnSpacing / 2;
+    const oddRowStartX = -imageScaledWidth / 2;
 
     // 미리 계산한 값들
-    const halfScaledHeight = scaledHeight / 2;
-    const halfOffsetY = offsetY / 2;
+    const halfImageHeight = imageScaledHeight / 2;
+    const halfRowSpacing = diamondRowSpacing / 2;
 
-    // totalRows 대신 실제로 캔버스에 그릴 가능성이 있는 행 범위를 계산할 수도 있겠지만
-    // 여기서는 기존 로직(totalRows)을 유지합니다.
+    // 총 행 계산
     const totalRows = row * 2 + 1;
     for (let rowIndex = 0; rowIndex < totalRows; rowIndex++) {
       const isEvenRow = rowIndex % 2 === 0;
-      const startX = isEvenRow ? startEvenX : startOddX;
-      // yPosition: 반복마다 halfOffsetY와 halfScaledHeight를 사용하여 계산 부담 줄임
-      const yPosition = rowIndex * halfOffsetY - halfScaledHeight;
+      const rowStartX = isEvenRow ? evenRowStartX : oddRowStartX;
 
-      // 캔버스 범위 검사: yPosition 값에 따라 전체 행을 건너뛸 수 있음
-      if (yPosition + scaledHeight < 0 || yPosition > canvasHeight) continue;
+      // Y 위치 계산 - 반복마다 재계산 방지
+      const imageY = rowIndex * halfRowSpacing - halfImageHeight;
+
+      // 캔버스 범위 검사: Y 위치에 따라 전체 행을 건너뛸 수 있음
+      if (imageY + imageScaledHeight < 0 || imageY > canvasHeight) continue;
+
+      // 각 열에 대해 이미지 그리기
       for (let colIndex = 0; colIndex <= (isEvenRow ? col - 1 : col); colIndex++) {
-        const xPosition = startX + colIndex * offsetX;
-        if (xPosition + scaledWidth < 0 || xPosition > canvasWidth) continue;
-        ctx.drawImage(source, xPosition, yPosition, scaledWidth, scaledHeight);
+        const imageX = rowStartX + colIndex * diamondColumnSpacing;
+
+        // X 위치가 캔버스 범위 내에 있는지 확인
+        if (imageX + imageScaledWidth < 0 || imageX > canvasWidth) continue;
+
+        ctx.drawImage(source, imageX, imageY, imageScaledWidth, imageScaledHeight);
       }
     }
     return createImageBitmap(offscreenCanvas);
