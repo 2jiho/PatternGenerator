@@ -3,63 +3,93 @@ import { PatternGenerator } from "$lib/patternGenerator";
 export class DiamondPatternGenerator extends PatternGenerator {
   constructor() {
     super([
-      { id: "distance", label: "Distance", min: -0.5, max: 3, step: 0.1, unit: "x", default: 1 },
-      { id: "col", label: "Column", min: 1, max: 20, step: 1, unit: "ea", default: 3 },
-      { id: "row", label: "Row", min: 1, max: 20, step: 1, unit: "ea", default: 2 },
+      { id: "gap", label: "Gap", min: -0.5, max: 3, step: 0.1, unit: "x", default: 1 },
+      { id: "cols", label: "Columns", min: 1, max: 20, step: 1, unit: "ea", default: 3 },
+      { id: "rows", label: "Rows", min: 1, max: 20, step: 1, unit: "ea", default: 2 },
     ]);
   }
+
   async generate(source: ImageBitmap, paramValues: {}): Promise<ImageBitmap> {
-    const { distance, col, row, canvasWidth } = paramValues as {
-      distance: number;
-      col: number;
-      row: number;
+    // 파라미터 추출 및 타입 지정
+    const {
+      gap,
+      cols,
+      rows,
+      canvasWidth: canvasW,
+    } = paramValues as {
+      gap: number;
+      cols: number;
+      rows: number;
       canvasWidth: number;
     };
-    // 이미지 크기 및 캔버스 설정
-    const { width: imgWidth, height: imgHeight } = source;
-    const canvasHeight = ((imgHeight / imgWidth) * canvasWidth * row) / col;
 
-    const offscreenCanvas = new OffscreenCanvas(canvasWidth, canvasHeight);
-    const ctx = offscreenCanvas.getContext("2d");
+    // 소스 이미지 크기 추출
+    const { width: imgW, height: imgH } = source;
+
+    // 캔버스 설정 계산 - 최적화 1: 정수 캔버스 사이즈 사용
+    const aspect = imgH / imgW;
+    const canvasH = Math.ceil((aspect * canvasW * rows) / cols);
+
+    // 캔버스 생성
+    const canvas = new OffscreenCanvas(canvasW, canvasH);
+    const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Failed to get canvas context");
 
-    // 이미지 스케일 및 간격 계산 (반복문 외부에서 미리 계산)
-    const scaleRatio = canvasWidth / (col * imgWidth);
-    const imageScaledWidth = (imgWidth / (distance + 1)) * scaleRatio;
-    const imageScaledHeight = (imgHeight / (distance + 1)) * scaleRatio;
-    const diamondColumnSpacing = imageScaledWidth * (distance + 1);
-    const diamondRowSpacing = imageScaledHeight * (distance + 1);
+    // 비율 및 크기 계산 - 한번에 계산하여 중복 연산 제거
+    const baseScale = canvasW / (cols * imgW);
+    const sizeScale = 1 / (gap + 1);
+    const combinedScale = baseScale * sizeScale; // 최적화 4: 여러 계산을 한번으로 통합
 
-    // 시작 위치 계산
-    const evenRowStartX = -imageScaledWidth / 2 + diamondColumnSpacing / 2;
-    const oddRowStartX = -imageScaledWidth / 2;
+    // 타일 크기 계산
+    const tileW = imgW * combinedScale;
+    const tileH = imgH * combinedScale;
+    const tileH2 = tileH / 2;
+    const tileW2 = tileW / 2;
 
-    // 미리 계산한 값들
-    const halfImageHeight = imageScaledHeight / 2;
-    const halfRowSpacing = diamondRowSpacing / 2;
+    // 다이아몬드 패턴 간격 계산
+    const gridW = imgW * baseScale;
+    const gridH = imgH * baseScale;
+    const gridW2 = gridW / 2;
+    const gridH2 = gridH / 2;
 
-    // 총 행 계산
-    const totalRows = row * 2 + 1;
-    for (let rowIndex = 0; rowIndex < totalRows; rowIndex++) {
-      const isEvenRow = rowIndex % 2 === 0;
-      const rowStartX = isEvenRow ? evenRowStartX : oddRowStartX;
+    // 행 시작 위치 계산 - 최적화 5: 상수값 사전 계산
+    const evenX = gridW2 - tileW2;
+    const oddX = -tileW2;
 
-      // Y 위치 계산 - 반복마다 재계산 방지
-      const imageY = rowIndex * halfRowSpacing - halfImageHeight;
+    // 최적화 6: 뷰포트 계산으로 필요한 행과 열만 계산
+    const startRow = Math.max(0, Math.floor(-tileH2 / gridH2));
+    const endRow = Math.min(rows * 2 + 1, Math.ceil((canvasH + tileH) / gridH2));
 
-      // 캔버스 범위 검사: Y 위치에 따라 전체 행을 건너뛸 수 있음
-      if (imageY + imageScaledHeight < 0 || imageY > canvasHeight) continue;
+    // 최적화 7: 드로잉 한번에 묶기
+    ctx.save();
 
-      // 각 열에 대해 이미지 그리기
-      for (let colIndex = 0; colIndex <= (isEvenRow ? col - 1 : col); colIndex++) {
-        const imageX = rowStartX + colIndex * diamondColumnSpacing;
+    // 각 행에 타일 배치 - 최적화된 범위
+    for (let ri = startRow; ri < endRow; ri++) {
+      const isEven = ri % 2 === 0;
+      const startX = isEven ? evenX : oddX;
+      const y = ri * gridH2 - tileH2;
 
-        // X 위치가 캔버스 범위 내에 있는지 확인
-        if (imageX + imageScaledWidth < 0 || imageX > canvasWidth) continue;
+      // 최적화 8: 행 단위로 미리 열 계산
+      const tilesInRow = isEven ? cols - 1 : cols;
 
-        ctx.drawImage(source, imageX, imageY, imageScaledWidth, imageScaledHeight);
+      // 최적화 9: 화면에 표시되는 열 범위 계산
+      const startCol = Math.max(0, Math.floor((-startX - tileW) / gridW));
+      const endCol = Math.min(tilesInRow, Math.ceil((canvasW - startX) / gridW));
+
+      for (let ci = startCol; ci <= endCol; ci++) {
+        const x = startX + ci * gridW;
+
+        // 최적화 10: 브라우저 렌더링 단위에 맞춰 정수로 반올림
+        const drawX = Math.round(x);
+        const drawY = Math.round(y);
+
+        ctx.drawImage(source, drawX, drawY, tileW, tileH);
       }
     }
-    return createImageBitmap(offscreenCanvas);
+
+    ctx.restore();
+
+    // 최적화 11: 가능하면 객체 재사용
+    return createImageBitmap(canvas);
   }
 }
