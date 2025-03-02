@@ -6,8 +6,8 @@
   import ImageSelector from "$lib/components/ImageSelector.svelte";
   import DownloadButton from "$lib/components/DownloadButton.svelte";
   import { DiamondPatternGenerator } from "$lib/patternGenerator/diamond";
-
-  const patternGenerators = { diamond: new DiamondPatternGenerator() };
+  import { GridPatternGenerator } from "$lib/patternGenerator/grid";
+  const patternGenerators = { diamond: new DiamondPatternGenerator(), grid: new GridPatternGenerator() };
 
   let imageBitmap: ImageBitmap;
   let patternImageBitmap: ImageBitmap | undefined;
