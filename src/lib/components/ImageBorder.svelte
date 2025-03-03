@@ -16,13 +16,6 @@
   }
 
   async function drawBorderBitmap() {
-    if (!imageBitmap) return;
-
-    if (borderWidthRatio === 0) {
-      borderBitmap = imageBitmap;
-      return;
-    }
-
     const imgW = imageBitmap.width;
     const imgH = imageBitmap.height;
     const borderWidth = Math.ceil((Math.max(imgW, imgH) * borderWidthRatio) / 100);
@@ -31,36 +24,33 @@
     const canvasH = imgH + borderWidth * 2;
     const canvas = new OffscreenCanvas(canvasW, canvasH);
     const ctx = canvas.getContext("2d");
-
     if (!ctx) return;
+    ctx.shadowColor = borderColor;
+    ctx.shadowBlur = borderWidth;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.drawImage(imageBitmap, borderWidth, borderWidth);
 
-    try {
-      ctx.shadowColor = borderColor;
-      ctx.shadowBlur = borderWidth;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-      ctx.drawImage(imageBitmap, borderWidth, borderWidth);
+    const imageData = ctx.getImageData(0, 0, canvasW, canvasH);
+    const data = imageData.data;
 
-      const imageData = ctx.getImageData(0, 0, canvasW, canvasH);
-      const data = imageData.data;
-
-      for (let i = 3; i < data.length; i += 4) {
-        data[i] = data[i] > 10 ? 255 : 0;
-      }
-
-      ctx.putImageData(imageData, 0, 0);
-      borderBitmap = await createImageBitmap(canvas);
-    } catch (error) {
-      console.error("Error drawing border:", error);
-      borderBitmap = imageBitmap;
+    for (let i = 3; i < data.length; i += 4) {
+      data[i] = data[i] > 10 ? 255 : 0;
     }
+
+    ctx.putImageData(imageData, 0, 0);
+    borderBitmap = await createImageBitmap(canvas);
   }
 
   const debouncedDrawBorderBitmap = debounce(drawBorderBitmap, 100);
 
   $effect(() => {
-    if (imageBitmap && borderWidthRatio && borderColor) {
-      debouncedDrawBorderBitmap();
+    if (imageBitmap) {
+      if (borderWidthRatio !== 0 && borderColor) {
+        debouncedDrawBorderBitmap();
+      } else {
+        borderBitmap = imageBitmap;
+      }
     }
   });
 </script>
