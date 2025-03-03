@@ -4,10 +4,10 @@ export class TessellationPatternGenerator extends PatternGenerator {
   constructor() {
     super([
       { id: "seed", label: "Seed", min: 0, max: 1000, step: 1, unit: "", default: 42 },
-      { id: "count", label: "Elements Count", min: 1, max: 50, step: 1, unit: "ea", default: 10 },
-      { id: "size", label: "Size", min: 0.1, max: 2, step: 0.01, unit: "x", default: 0.5 },
-      { id: "cols", label: "Columns", min: 1, max: 10, step: 1, unit: "ea", default: 2 },
-      { id: "rows", label: "Rows", min: 1, max: 10, step: 1, unit: "ea", default: 2 },
+      { id: "count", label: "Elements Count", min: 1, max: 50, step: 1, unit: "ea", default: 30 },
+      { id: "size", label: "Size", min: 0.1, max: 2, step: 0.01, unit: "x", default: 1 },
+      { id: "cols", label: "Columns", min: 1, max: 10, step: 1, unit: "ea", default: 3 },
+      { id: "rows", label: "Rows", min: 1, max: 10, step: 1, unit: "ea", default: 3 },
     ]);
   }
 
