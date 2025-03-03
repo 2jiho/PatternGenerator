@@ -26,23 +26,18 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.shadowColor = borderColor;
-    ctx.shadowBlur = borderWidth;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.drawImage(imageBitmap, borderWidth, borderWidth);
-
-    const imageData = ctx.getImageData(0, 0, canvasW, canvasH);
-    const data = imageData.data;
-
-    for (let i = 3; i < data.length; i += 4) {
-      data[i] = data[i] > 10 ? 255 : 0;
+    ctx.shadowBlur = 0;
+    const steps = 32;
+    for (let i = 0; i < steps; i++) {
+      const angle = (i * 2 * Math.PI) / steps;
+      ctx.shadowOffsetX = borderWidth * Math.cos(angle);
+      ctx.shadowOffsetY = borderWidth * Math.sin(angle);
+      ctx.drawImage(imageBitmap, borderWidth, borderWidth);
     }
-
-    ctx.putImageData(imageData, 0, 0);
     borderBitmap = await createImageBitmap(canvas);
   }
 
-  const debouncedDrawBorderBitmap = debounce(drawBorderBitmap, 100);
+  const debouncedDrawBorderBitmap = debounce(drawBorderBitmap, 1);
 
   $effect(() => {
     if (imageBitmap) {
