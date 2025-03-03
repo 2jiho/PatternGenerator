@@ -7,10 +7,12 @@
   let borderWidthRatio: number = $state(0); // 테두리 두께 비율
   let borderColor: string = $state("#ffffff"); // 테두리 색상
 
-  let debounceTimer: NodeJS.Timeout | undefined;
-  function debounce(func: () => void, delay: number = 200) {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(func, delay);
+  function debounce<T extends (...args: any[]) => any>(func: T, delay: number = 200): (...args: Parameters<T>) => void {
+    let debounceTimer: NodeJS.Timeout | undefined;
+    return (...args: Parameters<T>) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => func(...args), delay);
+    };
   }
 
   async function drawBorderBitmap() {
@@ -54,13 +56,12 @@
     }
   }
 
-  const debouncedDrawBorderBitmap = () => {
-    debounce(drawBorderBitmap, 100);
-  };
+  const debouncedDrawBorderBitmap = debounce(drawBorderBitmap, 100);
 
   $effect(() => {
-    const _ = [borderWidthRatio, borderColor, imageBitmap];
-    debouncedDrawBorderBitmap();
+    if (imageBitmap && borderWidthRatio && borderColor) {
+      debouncedDrawBorderBitmap();
+    }
   });
 </script>
 
