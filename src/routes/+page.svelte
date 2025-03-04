@@ -86,9 +86,12 @@
   <div class=" flex-1 md:h-screen">
     <div class="flex aspect-square size-full items-center justify-center md:aspect-auto">
       {#if patternImageBitmap}
-        <canvas bind:this={patternCanvas} class="size-full object-contain"></canvas>
+        <canvas
+          bind:this={patternCanvas}
+          class="max-h-full max-w-full bg-conic-[#ccc_0%_25%,transparent_25%_50%,#ccc_50%_75%,transparent_75%_100%] bg-[length:40px_40px] bg-center object-contain"
+        ></canvas>
       {:else}
-        <ImageSolid class="size-1/4 fill-gray-300" />
+        <ImageSolid class="size-1/4 text-gray-300 " />
       {/if}
     </div>
   </div>
