@@ -41,6 +41,9 @@ importers:
       gh-pages:
         specifier: ^6.3.0
         version: 6.3.0
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
       prettier-plugin-svelte:
         specifier: ^3.3.3
         version: 3.3.3(prettier@3.5.3)(svelte@5.20.1)
