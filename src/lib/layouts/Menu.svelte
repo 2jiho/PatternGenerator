@@ -12,11 +12,8 @@
   async function handleDownload() {
     if (!$patternBitmap) return;
     const offScreenCanvas = new OffscreenCanvas($patternBitmap.width, $patternBitmap.height);
-    const ctx = offScreenCanvas.getContext("2d");
-    if (!ctx) return;
-    ctx.drawImage($patternBitmap, 0, 0);
-    const blob = await offScreenCanvas.convertToBlob();
-    const url = await URL.createObjectURL(blob);
+    offScreenCanvas.getContext("bitmaprenderer")?.transferFromImageBitmap($patternBitmap);
+    const url = URL.createObjectURL(await offScreenCanvas.convertToBlob());
     const a = document.createElement("a");
     a.href = url;
     a.download = $filename;
