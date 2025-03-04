@@ -11,6 +11,7 @@ export const patternBitmap = writable<ImageBitmap | undefined>();
 export const selectedPattern = writable<PatternKey>("diamond");
 export const patternParams = writable<ParamConfig[]>([]);
 export const paramValues = writable<ParamValues>({});
+export const border = writable({ value: 0, color: "#ffffff" });
 export const filename = writable<string>("");
 
 const cache: Record<string, ImageBitmap> = {};
@@ -42,6 +43,10 @@ files.subscribe(async (fileList) => {
 });
 
 imageBitmap.subscribe(async (bitmap) => {
+  border.update((border) => ({ ...border }));
+});
+
+borderBitmap.subscribe(async (bitmap) => {
   const selectedId = get(selectedPattern);
   const selectedGenerator = PatternGenerators[selectedId];
   const params = get(paramValues);
@@ -49,8 +54,6 @@ imageBitmap.subscribe(async (bitmap) => {
     patternBitmap.set(await selectedGenerator.generate(bitmap, params));
   }
 });
-
-borderBitmap.subscribe((bitmap) => {});
 
 selectedPattern.subscribe((selectedId: PatternKey) => {
   const selectedGenerator = PatternGenerators[selectedId];
@@ -69,14 +72,42 @@ selectedPattern.subscribe((selectedId: PatternKey) => {
 paramValues.subscribe(async (params) => {
   const selectedId = get(selectedPattern);
   const selectedGenerator = PatternGenerators[selectedId];
-  const bitmap = get(imageBitmap);
+  const bitmap = get(borderBitmap);
   if (bitmap) {
     patternBitmap.set(await selectedGenerator.generate(bitmap, params));
   }
-  const oldFilename = get(filename);
   const newFilename = `${selectedId}-pattern(${Object.entries(params)
     .map(([key, value]) => `${key}-${value}`)
     .join(",")}).png`;
   filename.set(newFilename);
-  console.log(get(filename));
 });
+
+border.subscribe(
+  debounce(async (border) => {
+    const bitmap = get(imageBitmap);
+    if (bitmap) {
+      if (border.value > 0) {
+        const borderWidth = (border.value / 100) * Math.max(bitmap.width, bitmap.height);
+        const canvasW = bitmap.width + borderWidth * 2;
+        const canvasH = bitmap.height + borderWidth * 2;
+        const canvas = new OffscreenCanvas(canvasW, canvasH);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.shadowColor = border.color;
+        ctx.shadowBlur = 0;
+        const steps = 32;
+        for (let i = 0; i < steps; i++) {
+          const angle = (i * 2 * Math.PI) / steps;
+          ctx.shadowOffsetX = borderWidth * Math.cos(angle);
+          ctx.shadowOffsetY = borderWidth * Math.sin(angle);
+          ctx.drawImage(bitmap, borderWidth, borderWidth);
+        }
+        borderBitmap.set(await createImageBitmap(canvas));
+      } else {
+        borderBitmap.set(bitmap);
+      }
+    } else {
+      borderBitmap.set(undefined);
+    }
+  }, 1),
+);

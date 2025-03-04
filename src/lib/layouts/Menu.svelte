@@ -1,10 +1,9 @@
 <script lang="ts">
   import PatternGenerators from "$lib/patternGenerator";
-  import { filename, files, paramValues, patternBitmap, patternParams, selectedPattern } from "$lib/store";
+  import { border, filename, files, paramValues, patternBitmap, patternParams, selectedPattern } from "$lib/store";
   import { Button, Dropdown, FileUploaderButton, Slider } from "carbon-components-svelte";
   import { Download } from "carbon-icons-svelte";
 
-  Object.keys(PatternGenerators);
   const items = Object.keys(PatternGenerators).map((key) => ({
     id: key,
     text: key.charAt(0).toUpperCase() + key.slice(1),
@@ -33,6 +32,8 @@
 <main>
   <h1>PatternGenerator</h1>
   <FileUploaderButton bind:files={$files} accept={["image/*"]} labelText="Click to select image files" size="default" />
+  <Slider bind:value={$border.value} labelText="Border" min={0} max={10} step={1} maxLabel="10%" fullWidth />
+  <input type="color" bind:value={$border.color} />
   <Dropdown titleText="Pattern" bind:selectedId={$selectedPattern} {items} />
   {#each $patternParams as { id, label, min, max, step, unit }}
     <Slider bind:value={$paramValues[id]} {min} {max} {step} labelText={label} maxLabel="{max}{unit}" fullWidth />
