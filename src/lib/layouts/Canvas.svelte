@@ -30,5 +30,8 @@
   }
   canvas {
     max-width: 80%;
+    background-image: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%);
+    background-size: 40px 40px;
+    background-position: center;
   }
 </style>
