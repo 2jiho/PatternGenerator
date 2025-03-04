@@ -4,8 +4,8 @@ export class TessellationPatternGenerator extends PatternGenerator {
   constructor() {
     super([
       { id: "seed", label: "Seed", min: 0, max: 1000, step: 1, unit: "", default: 42 },
-      { id: "count", label: "Elements Count", min: 1, max: 50, step: 1, unit: "ea", default: 30 },
-      { id: "size", label: "Size", min: 0.1, max: 2, step: 0.01, unit: "x", default: 1 },
+      { id: "count", label: "Elements Count", min: 1, max: 50, step: 1, unit: "ea", default: 10 },
+      { id: "size", label: "Size", min: 10, max: 200, step: 1, unit: "%", default: 100 },
       { id: "cols", label: "Columns", min: 1, max: 10, step: 1, unit: "ea", default: 3 },
       { id: "rows", label: "Rows", min: 1, max: 10, step: 1, unit: "ea", default: 3 },
     ]);
@@ -55,7 +55,7 @@ export class TessellationPatternGenerator extends PatternGenerator {
     // 타일 경계가 연결되도록 중앙과 모서리에 그리기
     for (let i = 0; i < count; i++) {
       // 시드 기반 무작위성으로 크기와 회전 변동 계산
-      const randScale = size * (0.6 + random() * 0.8); // 60%-140% 변동
+      const randScale = (size / 100) * (0.6 + random() * 0.8); // 60%-140% 변동
       const randRot = random() * 360; // 0-360도 범위
 
       // 이미지 크기 계산

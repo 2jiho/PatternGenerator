@@ -3,7 +3,7 @@ import { PatternGenerator } from "$lib/patternGenerator/types";
 export class GridPatternGenerator extends PatternGenerator {
   constructor() {
     super([
-      { id: "gap", label: "Gap", min: -0.5, max: 3, step: 0.1, unit: "x", default: 0 },
+      { id: "gap", label: "Gap", min: -50, max: 30, step: 10, unit: "%", default: 0 },
       { id: "cols", label: "Columns", min: 1, max: 20, step: 1, unit: "ea", default: 3 },
       { id: "rows", label: "Rows", min: 1, max: 20, step: 1, unit: "ea", default: 3 },
     ]);
@@ -37,7 +37,7 @@ export class GridPatternGenerator extends PatternGenerator {
 
     // 비율 및 크기 계산
     const baseScale = canvasW / (cols * imgW);
-    const sizeScale = 1 / (gap + 1);
+    const sizeScale = 1 / (gap / 100 + 1);
     const combinedScale = baseScale * sizeScale;
 
     // 타일 크기 계산

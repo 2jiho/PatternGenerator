@@ -3,7 +3,7 @@ import { PatternGenerator } from "$lib/patternGenerator/types";
 export class DiamondPatternGenerator extends PatternGenerator {
   constructor() {
     super([
-      { id: "gap", label: "Gap", min: -0.5, max: 3, step: 0.1, unit: "x", default: 1 },
+      { id: "gap", label: "Gap", min: -50, max: 300, step: 10, unit: "%", default: 100 },
       { id: "cols", label: "Columns", min: 1, max: 20, step: 1, unit: "ea", default: 3 },
       { id: "rows", label: "Rows", min: 1, max: 20, step: 1, unit: "ea", default: 2 },
     ]);
@@ -37,7 +37,7 @@ export class DiamondPatternGenerator extends PatternGenerator {
 
     // 비율 및 크기 계산 - 한번에 계산하여 중복 연산 제거
     const baseScale = canvasW / (cols * imgW);
-    const sizeScale = 1 / (gap + 1);
+    const sizeScale = 1 / (gap / 100 + 1);
     const combinedScale = baseScale * sizeScale; // 최적화 4: 여러 계산을 한번으로 통합
 
     // 타일 크기 계산
