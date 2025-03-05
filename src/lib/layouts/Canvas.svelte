@@ -17,10 +17,9 @@
   {#if $patternBitmap}
     <canvas
       bind:this={canvas}
-      class="w-full bg-conic-[var(--color-surface-500)_0%_25%,transparent_25%_50%,var(--color-surface-500)_50%_75%,transparent_75%_100%] bg-[length:40px_40px] bg-center"
-    >
-    </canvas>
+      class="max-w-full bg-conic-[var(--color-surface-500)_0%_25%,transparent_25%_50%,var(--color-surface-500)_50%_75%,transparent_75%_100%] bg-[length:40px_40px] bg-center md:max-h-[calc(100vh-80px-32px-32px)]"
+    ></canvas>
   {:else}
-    <ImageOff class="text-surface-500 size-1/2" />
+    <ImageOff class="text-surface-500 max-w-full object-contain md:max-h-[calc(100vh-80px-32px-32px)]" size="100%" />
   {/if}
 </main>
