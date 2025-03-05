@@ -14,8 +14,6 @@ export const paramValues = writable<ParamValues>({});
 export const border = writable({ value: 0, color: "#ffffff" });
 export const filename = writable<string>("");
 
-const cache: Record<string, ImageBitmap> = {};
-
 function debounce<T extends (...args: any[]) => any>(func: T, delay: number = 200): (...args: Parameters<T>) => void {
   let debounceTimer: NodeJS.Timeout | undefined;
   return (...args: Parameters<T>) => {
@@ -52,6 +50,8 @@ borderBitmap.subscribe(async (bitmap) => {
   const params = get(paramValues);
   if (bitmap) {
     patternBitmap.set(await selectedGenerator.generate(bitmap, params));
+  } else {
+    patternBitmap.set(undefined);
   }
 });
 
@@ -76,10 +76,11 @@ paramValues.subscribe(async (params) => {
   if (bitmap) {
     patternBitmap.set(await selectedGenerator.generate(bitmap, params));
   }
-  const newFilename = `${selectedId}-pattern(${Object.entries(params)
-    .map(([key, value]) => `${key}-${value}`)
-    .join(",")}).png`;
-  filename.set(newFilename);
+  filename.set(
+    `${selectedId}-pattern(${Object.entries(params)
+      .map(([key, value]) => `${key}-${value}`)
+      .join(",")}).png`,
+  );
 });
 
 border.subscribe(

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { patternBitmap } from "$lib/store";
-  import { Image } from "carbon-icons-svelte";
+  import { ImageOff } from "lucide-svelte";
 
   let canvas: HTMLCanvasElement;
   $: if (canvas && $patternBitmap) {
@@ -13,25 +13,14 @@
   }
 </script>
 
-<main>
+<main class="grid place-items-center p-4">
   {#if $patternBitmap}
-    <canvas bind:this={canvas}></canvas>
+    <canvas
+      bind:this={canvas}
+      class="w-full bg-conic-[var(--color-surface-500)_0%_25%,transparent_25%_50%,var(--color-surface-500)_50%_75%,transparent_75%_100%] bg-[length:40px_40px] bg-center"
+    >
+    </canvas>
   {:else}
-    <Image width="80%" height="80%" fill="gray" />
+    <ImageOff class="text-surface-500 size-1/2" />
   {/if}
 </main>
-
-<style>
-  main {
-    display: grid;
-    place-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-  }
-  canvas {
-    max-width: 80%;
-    background-image: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%);
-    background-size: 40px 40px;
-    background-position: center;
-  }
-</style>
